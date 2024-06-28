@@ -1,0 +1,624 @@
+Option Explicit
+
+'Global Variables
+Dim currDate As String
+Dim currAvgRow As String
+Dim currColEnd As Integer
+Dim currColEnd2 As Integer ' For Sheet 2 "Charts" Sheet
+Dim currColEnd_Chart3 As Integer
+'related to tracking vals for new monthly chart
+Dim firstOf3 As Integer
+Dim lastOf3 As Integer
+'-----------------
+'Dim currColEnd2_2 As Integer 'name#1_#2, #1 represent sheet the var correlates to, #2 represent precedent var correlates to in sheet(left to right)
+Dim currSum As Integer
+Dim currCount As Integer
+Dim folderPath As String
+Dim file As String
+
+Sub runAll()
+    Dim response
+    
+    response = MsgBox("Before running the update, Please ensure your data is not already up to date." & vbCrLf & vbCrLf & _
+    "If it is already update please press X or No to cancel." & vbCrLf & vbCrLf & _
+    "(Updating without new data will irreversibly skew data already in the application)", _
+    vbQuestion + vbYesNo + vbDefaultButton2, "Would You Like To Update?")
+    
+    If response = vbYes Then
+        allAverages
+        allCharts
+        allCharts2
+        allCharts3
+    Else
+        'Do Nothing
+    End If
+End Sub
+
+Sub allCharts() 'runs and updates all data and charts needed in sheet 2 (Charts)
+    'eved/greenhouse
+    'influent (col V sheet 1 --> col Q Sheet 2)
+    Workbooks(file).Worksheets(2).Range("B" & currColEnd2).Value = Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value
+    Workbooks(file).Worksheets(2).Range("B" & currColEnd2).HorizontalAlignment = xlCenter  'formatting
+    
+    'effluent (col W sheet 1 --> col R Sheet 2)
+    Workbooks(file).Worksheets(2).Range("C" & currColEnd2).Value = Workbooks(file).Worksheets(1).Range("W" & currAvgRow).Value
+    Workbooks(file).Worksheets(2).Range("C" & currColEnd2).HorizontalAlignment = xlCenter  'formatting
+    
+    
+    'non-eved/open
+    'influent (col Y sheet 1 --> col S Sheet 2)
+    Workbooks(file).Worksheets(2).Range("D" & currColEnd2).Value = Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value
+    Workbooks(file).Worksheets(2).Range("D" & currColEnd2).HorizontalAlignment = xlCenter  'formatting
+    
+    'effluent (col Z sheet 1 --> col T Sheet 2)
+    Workbooks(file).Worksheets(2).Range("E" & currColEnd2).Value = Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).Value
+    Workbooks(file).Worksheets(2).Range("E" & currColEnd2).HorizontalAlignment = xlCenter  'formatting
+    
+    'rain (col AB sheet 1 --> Col U Sheet 2)
+    Workbooks(file).Worksheets(2).Range("F" & currColEnd2).Value = Workbooks(file).Worksheets(1).Range("AB" & currAvgRow).Value
+    Workbooks(file).Worksheets(2).Range("F" & currColEnd2).HorizontalAlignment = xlCenter  'formatting
+    
+End Sub
+
+Sub allCharts2() 'runs and updates all data and charts needed in sheet 3 (Charts2)
+    'Getting curr Row
+    Dim currColEnd_Chart2 As Integer
+    currColEnd_Chart2 = Workbooks(file).Worksheets(3).Range("A27:A1000").Find(What:="", LookIn:=xlValues).Row - 3 'account for blank space and last 2 info rows
+    
+    'copying data over
+        'eved Influent col V --> col B
+        Workbooks(file).Worksheets(3).Range("B" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value
+        Workbooks(file).Worksheets(3).Range("B" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'eved effluent col W --> col C
+        Workbooks(file).Worksheets(3).Range("C" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("W" & currAvgRow).Value
+        Workbooks(file).Worksheets(3).Range("C" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'eved % red col X --> col D
+        Workbooks(file).Worksheets(3).Range("D" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("X" & currAvgRow).Value & "%"
+        Workbooks(file).Worksheets(3).Range("D" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'non-eved Influent col Y --> col E
+        Workbooks(file).Worksheets(3).Range("E" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value
+        Workbooks(file).Worksheets(3).Range("E" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'non-eved effluent col Z --> col F
+        Workbooks(file).Worksheets(3).Range("F" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).Value
+        Workbooks(file).Worksheets(3).Range("F" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'non-eved % red col AA --> col G
+        Workbooks(file).Worksheets(3).Range("G" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).Value & "%"
+        Workbooks(file).Worksheets(3).Range("G" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+        'rain col AB --> col H
+        Workbooks(file).Worksheets(3).Range("H" & currColEnd_Chart2).Value = Workbooks(file).Worksheets(1).Range("AB" & currAvgRow).Value
+        Workbooks(file).Worksheets(3).Range("H" & currColEnd_Chart2).HorizontalAlignment = xlCenter 'formatting
+    
+    'calc % red excluding rain (I-(E-RAIN))/I
+    Workbooks(file).Worksheets(3).Range("I" & currColEnd_Chart2).Value = (((Workbooks(file).Worksheets(3).Range("E" & currColEnd_Chart2).Value - (Workbooks(file).Worksheets(3).Range("F" & currColEnd_Chart2).Value - Workbooks(file).Worksheets(3).Range("H" & currColEnd_Chart2).Value)) / Workbooks(file).Worksheets(3).Range("E" & currColEnd_Chart2).Value) * 100) & "%"
+    
+    'TBD (will excel be auto calculating new avgs?)
+        
+    
+    'formatting insert new row and future data
+    Workbooks(file).Worksheets(3).Range("A" & (currColEnd_Chart2 + 1) & ":I" & (currColEnd_Chart2 + 1)).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    Workbooks(file).Worksheets(3).Range("A" & (currColEnd_Chart2 + 1)).Value = DateAdd("m", 1, Date) 'next month
+    
+    
+End Sub
+
+'Sub allCharts3() 'runs and updates all data and charts needed in sheet 4 (Charts3)
+'    'calculate new averages for last row
+'    Dim selRange As Range
+'
+'        'ATU-G avg
+'    Set selRange = Workbooks(file).Worksheets(4).Range("B2:B" & (currColEnd_Chart3 - 1))
+'    Workbooks(file).Worksheets(4).Range("B" & (currColEnd_Chart3 + 1)).Value = CInt(Application.WorksheetFunction.Average(selRange))
+'
+'        'ATU-O avg
+'    Set selRange = Workbooks(file).Worksheets(4).Range("C2:C" & (currColEnd_Chart3 - 1))
+'    Workbooks(file).Worksheets(4).Range("C" & (currColEnd_Chart3 + 1)).Value = CInt(Application.WorksheetFunction.Average(selRange))
+'
+'    'Delete Previous Charts on Sheet 1 (Data Analyzed) and Sheet 4 (Charts 3)
+'        'List of Chart Objects
+'    Dim ChartList As ChartObjects
+'
+'        'The square that holds the chart
+'    Dim MyChartFrame As ChartObject
+'    Dim ChartToDelete As ChartObject
+'
+'        'The Physical chart with data
+'    Dim MyChart As Chart
+'
+'        'Accessing the Objects
+'    Set ChartList = Workbooks(file).Worksheets(1).ChartObjects
+'
+'    Dim ChartName As String
+'
+'    'Helpful: https://stackoverflow.com/questions/52956827/deleting-specific-chartobjects-by-name-property-excel-vba
+'
+'    For Each ChartToDelete In ChartList
+'        Set MyChartFrame = ChartToDelete
+'        Set MyChart = MyChartFrame.Chart
+'        ChartName = MyChart.Name
+'        ChartToDelete.Delete
+'    Next ChartToDelete
+'
+'        'Do the same for charts on sheet 4 now
+'    Set ChartList = Workbooks(file).Worksheets(4).ChartObjects
+'
+'    For Each ChartToDelete In ChartList
+'        Set MyChartFrame = ChartToDelete
+'        Set MyChart = MyChartFrame.Chart
+'        ChartName = MyChart.Name
+'        ChartToDelete.Delete
+'    Next ChartToDelete
+'
+'
+'
+'
+'    'Generate monthly chart and insert copy next to new values on sheet 1 (Data Analyzed), and in Sheet 4 (Charts 3)
+'    lastOf3 = Workbooks(file).Worksheets(4).Range("A4:A1000").Find(What:="", LookIn:=xlValues).Row - 1 'minus 1 to exclude blank value in chart
+'
+'    Dim monthTitle As String
+'    monthTitle = "ATU Flow Variation in " & MonthName(Month(Date))
+'
+'    Dim currChart As Object
+'    Set currChart = Workbooks(file).Worksheets(1).Shapes.AddChart2(201, xlColumnClustered, 750, ((15 * currColEnd) - 450), 400, 250, True)
+'
+'    Dim rng As Range
+'    Set rng = Workbooks(file).Worksheets(4).Range("A" & firstOf3 & ":E" & lastOf3)
+'    Debug.Print firstOf3
+'    Debug.Print lastOf3
+'
+'    With currChart.Chart 'helpful: https://exceloffthegrid.com/vba-code-for-charts-and-graphs-in-excel/
+'        .SetSourceData source:=rng
+'        .FullSeriesCollection(1).ChartType = xlColumnClustered
+'        .FullSeriesCollection(1).AxisGroup = 1
+'        .FullSeriesCollection(2).ChartType = xlColumnClustered
+'        .FullSeriesCollection(2).AxisGroup = 1
+'        .FullSeriesCollection(3).ChartType = xlLine
+'        .FullSeriesCollection(3).AxisGroup = 1
+'        .FullSeriesCollection(4).ChartType = xlLine
+'        .FullSeriesCollection(4).AxisGroup = 1
+'        .ChartTitle.Text = monthTitle
+'    End With
+'
+'        'insert same chart on sheets 4
+'    Set currChart = Workbooks(file).Worksheets(4).Shapes.AddChart2(201, xlColumnClustered, 300, 10, 400, 250, True)
+'
+'    With currChart.Chart
+'        .SetSourceData source:=rng
+'        .FullSeriesCollection(1).ChartType = xlColumnClustered
+'        .FullSeriesCollection(1).AxisGroup = 1
+'        .FullSeriesCollection(2).ChartType = xlColumnClustered
+'        .FullSeriesCollection(2).AxisGroup = 1
+'        .FullSeriesCollection(3).ChartType = xlLine
+'        .FullSeriesCollection(3).AxisGroup = 1
+'        .FullSeriesCollection(4).ChartType = xlLine
+'        .FullSeriesCollection(4).AxisGroup = 1
+'        .ChartTitle.Text = monthTitle
+'    End With
+'
+'    'Generate all data chart and insert in Sheets 4 (Charts 3)
+'    Set currChart = Workbooks(file).Worksheets(4).Shapes.AddChart2(201, xlColumnClustered, 300, 270, 400, 250, True)
+'    Set rng = Workbooks(file).Worksheets(4).Range("A1:E" & lastOf3)
+'    With currChart.Chart
+'        .SetSourceData source:=rng
+'        .FullSeriesCollection(1).ChartType = xlColumnClustered
+'        .FullSeriesCollection(1).AxisGroup = 1
+'        .FullSeriesCollection(2).ChartType = xlColumnClustered
+'        .FullSeriesCollection(2).AxisGroup = 1
+'        .FullSeriesCollection(3).ChartType = xlLine
+'        .FullSeriesCollection(3).AxisGroup = 1
+'        .FullSeriesCollection(4).ChartType = xlLine
+'        .FullSeriesCollection(4).AxisGroup = 1
+'        .ChartTitle.Text = "ATU Flow Variation ALL TIME"
+'    End With
+'
+'End Sub
+
+Sub allCharts3()
+    On Error GoTo ErrorHandler
+    
+    ' Ensure variables are initialized
+    Dim selRange As Range
+    Dim currChart As Object
+    Dim monthTitle As String
+    Dim rng As Range
+    Dim ChartList As ChartObjects
+    Dim MyChartFrame As ChartObject
+    Dim ChartToDelete As ChartObject
+    Dim ChartName As String
+    
+    ' Calculate new averages for last row
+    Set selRange = Workbooks(file).Worksheets(4).Range("B2:B" & (currColEnd_Chart3 - 1))
+    Workbooks(file).Worksheets(4).Range("B" & (currColEnd_Chart3 + 1)).Value = Application.WorksheetFunction.Average(selRange)
+    
+    Set selRange = Workbooks(file).Worksheets(4).Range("C2:C" & (currColEnd_Chart3 - 1))
+    Workbooks(file).Worksheets(4).Range("C" & (currColEnd_Chart3 + 1)).Value = Application.WorksheetFunction.Average(selRange)
+    
+    ' Delete Previous Charts on Sheet 1 (Data Analyzed) and Sheet 4 (Charts 3)
+    Set ChartList = Workbooks(file).Worksheets(1).ChartObjects
+    
+    For Each ChartToDelete In ChartList
+        ChartToDelete.Delete
+    Next ChartToDelete
+    
+    Set ChartList = Workbooks(file).Worksheets(4).ChartObjects
+    
+    For Each ChartToDelete In ChartList
+        ChartToDelete.Delete
+    Next ChartToDelete
+    
+    ' Generate monthly chart and insert copy next to new values on sheet 1 (Data Analyzed), and in Sheet 4 (Charts 3)
+    lastOf3 = Workbooks(file).Worksheets(4).Range("A4:A1000").Find(What:="", LookIn:=xlValues).Row - 1 ' minus 1 to exclude blank value in chart
+    monthTitle = "ATU Flow Variation in " & MonthName(Month(Date))
+    
+    ' Create chart in sheet 1
+    Set currChart = Workbooks(file).Worksheets(1).Shapes.AddChart2(201, xlColumnClustered, 750, ((15 * currColEnd) - 450), 400, 250, True).Chart
+    Set rng = Workbooks(file).Worksheets(4).Range("A" & firstOf3 & ":E" & lastOf3)
+    
+    With currChart
+        .SetSourceData source:=rng
+        .FullSeriesCollection(1).ChartType = xlColumnClustered
+        .FullSeriesCollection(2).ChartType = xlColumnClustered
+        .FullSeriesCollection(3).ChartType = xlLine
+        .FullSeriesCollection(4).ChartType = xlLine
+        .ChartTitle.Text = monthTitle
+    End With
+    
+    ' Create chart in sheet 4 (Charts 3)
+    Set currChart = Workbooks(file).Worksheets(4).Shapes.AddChart2(201, xlColumnClustered, 300, 10, 400, 250, True).Chart
+    
+    With currChart
+        .SetSourceData source:=rng
+        .FullSeriesCollection(1).ChartType = xlColumnClustered
+        .FullSeriesCollection(2).ChartType = xlColumnClustered
+        .FullSeriesCollection(3).ChartType = xlLine
+        .FullSeriesCollection(4).ChartType = xlLine
+        .ChartTitle.Text = monthTitle
+    End With
+    
+    ' Generate all data chart and insert in Sheets 4 (Charts 3)
+    Set currChart = Workbooks(file).Worksheets(4).Shapes.AddChart2(201, xlColumnClustered, 300, 270, 400, 250, True).Chart
+    Set rng = Workbooks(file).Worksheets(4).Range("A1:E" & lastOf3)
+    
+    With currChart
+        .SetSourceData source:=rng
+        .FullSeriesCollection(1).ChartType = xlColumnClustered
+        .FullSeriesCollection(2).ChartType = xlColumnClustered
+        .FullSeriesCollection(3).ChartType = xlLine
+        .FullSeriesCollection(4).ChartType = xlLine
+        .ChartTitle.Text = "ATU Flow Variation ALL TIME"
+    End With
+    
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "An error occurred: " & Err.Description, vbExclamation
+End Sub
+
+Sub allAverages() 'runs and updates all data for sheets 1 (DataAnalyzed)
+    folderPath = ThisWorkbook.Path + "\"
+    file = Dir(folderPath)
+    
+    getDate
+    lastRow 1, "A"
+    
+    greenHouseAvgs
+    openAvgs
+    rainGPDavgs
+    finalAvgs1
+End Sub
+
+Sub greenHouseAvgs() 'note dates in col B
+    currSum = 0
+    currCount = 0
+    
+    'influent (vals in Col E, avgs in Col V)
+    Dim a As Integer
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("E" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("E" & a).Value
+            currCount = currCount + 1
+            'check if both the Influent in GH and Open have vals and add to chart 3
+            If Workbooks(file).Worksheets(1).Range("L" & a).Value <> "" Then
+                'date --> Charts 3 Date
+                Workbooks(file).Worksheets(4).Range("A" & currColEnd_Chart3).Value = Workbooks(file).Worksheets(1).Range("B" & a).Value
+                'influent GH --> ATU-G col B
+                Workbooks(file).Worksheets(4).Range("B" & currColEnd_Chart3).Value = Workbooks(file).Worksheets(1).Range("E" & a).Value
+                'influent open --> ATU-O col C
+                Workbooks(file).Worksheets(4).Range("C" & currColEnd_Chart3).Value = Workbooks(file).Worksheets(1).Range("L" & a).Value
+                'low + high vals for graph, + or - 1% of target (350)
+                Workbooks(file).Worksheets(4).Range("D" & currColEnd_Chart3).Value = ("" & 346.5) 'low is 346.5
+                Workbooks(file).Worksheets(4).Range("E" & currColEnd_Chart3).Value = ("" & 353.5) 'high is 353.5
+                'add on to currColEnd_Chart3 and insert new row for next values
+                currColEnd_Chart3 = currColEnd_Chart3 + 1
+                Workbooks(file).Worksheets(4).Range("A" & (currColEnd_Chart3) & ":" & "E" & (currColEnd_Chart3)).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+            End If
+        ElseIf Workbooks(file).Worksheets(1).Range("E" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("V" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'effluent (vals in Col F, avgs in Col W)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("F" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("F" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("F" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("W" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("W" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'temp (vals Col C, avgs Col AD)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("C" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("C" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("C" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("AD" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("AD" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    '%RH (vals Col D, avgs Col AE)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("D" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("D" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("D" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("B" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("B" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("AE" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("AE" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'calculating reduction (col X)
+    Workbooks(file).Worksheets(1).Range("X" & currAvgRow).Value = (((Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value - Workbooks(file).Worksheets(1).Range("W" & currAvgRow).Value) / Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value) * 100) & "%"
+    If Workbooks(file).Worksheets(1).Range("V" & currAvgRow).Value - Workbooks(file).Worksheets(1).Range("W" & currAvgRow).Value > 0 Then
+        Workbooks(file).Worksheets(1).Range("X" & currAvgRow).Font.Bold = True
+        Workbooks(file).Worksheets(1).Range("X" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    Else
+        Workbooks(file).Worksheets(1).Range("X" & currAvgRow).Font.Bold = True
+        Workbooks(file).Worksheets(1).Range("X" & currAvgRow).Font.Color = -16776961
+        Workbooks(file).Worksheets(1).Range("X" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    End If
+    
+End Sub
+
+Sub openAvgs() 'note date in Col I
+    currSum = 0
+    currCount = 0
+    
+    'influent (vals in Col L, avgs in Col Y)
+    Dim a As Integer
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("L" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("L" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("L" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'effluent (vals in Col M, avgs in Col Z)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("M" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("M" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("M" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'temp (vals Col J, avgs Col AF)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("J" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("J" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("J" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("AF" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("AF" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    '%RH (vals Col K, avgs Col AG)
+    currSum = 0
+    currCount = 0
+    
+    For a = currColEnd To 3 Step -1
+        If Workbooks(file).Worksheets(1).Range("K" & a).Value <> "" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("K" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("K" & a).Value = "" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then 'checking if its a blank cell/removed value, or not in current date range
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    Workbooks(file).Worksheets(1).Range("AG" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("AG" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+    'calculating reduction (col AA)
+    Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).Value = (((Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value - Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).Value) / Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value) * 100) & "%"
+    If Workbooks(file).Worksheets(1).Range("Y" & currAvgRow).Value - Workbooks(file).Worksheets(1).Range("Z" & currAvgRow).Value > 0 Then
+        Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).Font.Bold = True
+        Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    Else
+        Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).Font.Bold = True
+        Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).Font.Color = -16776961
+        Workbooks(file).Worksheets(1).Range("AA" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    End If
+    
+End Sub
+
+Sub rainGPDavgs()
+    currSum = 0
+    currCount = 0
+    '(vals in Col O, Avgs in col AB)
+    Dim a As Integer
+    
+    For a = currColEnd To 3 Step -1 'NOTE: using dates from open wetlands
+        If Workbooks(file).Worksheets(1).Range("O" & a).Value <> "0" And Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then
+            currSum = currSum + Workbooks(file).Worksheets(1).Range("O" & a).Value
+            currCount = currCount + 1
+        ElseIf Workbooks(file).Worksheets(1).Range("O" & a).Value = "0" Or Year(currDate) <> Year(Workbooks(file).Worksheets(1).Range("I" & a).Value) Or Month(currDate) <> Month(Workbooks(file).Worksheets(1).Range("I" & a).Value) Then  'checking if its a negligible value
+            'if so do nothing and move on
+        Else
+            Exit For 'means youve reached the end of the month's values so stop
+        End If
+    Next a
+    
+    Workbooks(file).Worksheets(1).Range("AB" & currAvgRow).Value = (currSum / currCount)
+    Workbooks(file).Worksheets(1).Range("AB" & currAvgRow).HorizontalAlignment = xlCenter 'formatting
+    
+End Sub
+
+Sub lastRow(sheet, col)
+    currColEnd = Workbooks(file).Worksheets(sheet).Range(col & ":" & col).Find(What:="", LookIn:=xlValues).Row - 1
+End Sub
+
+Sub getDate()
+    currDate = Date 'date from user's system
+    
+    'check in averages section which recent row is empty (dates of avgs in Col U
+    currColEnd = Workbooks(file).Worksheets(1).Range("U4:U1000").Find(What:="", LookIn:=xlValues).Row - 3
+    formatSheet1
+    '-3 account for the last 2 bolded summary rows and the empty space itself
+    
+    'finding avg row correlating to todays date in Sheet 1 (DataAnalyzed)
+    Dim i As Integer
+    For i = currColEnd To 4 Step -1
+        If Year(currDate) = Year(Workbooks(file).Worksheets(1).Range("U" & i).Value) And Month(currDate) = Month(Workbooks(file).Worksheets(1).Range("U" & i).Value) Then
+            currAvgRow = i
+            Exit For
+        End If
+        i = i - 1
+    Next i
+    
+    'finding reduction and eved/non-eved rows correlating to todays date in Sheet 2 (Charts) NOTE: IF BOTTOM CHART IN SHEET 2 IS NEEDED DO IT HERE
+    currColEnd2 = Workbooks(file).Worksheets(2).Range("A4:A1000").Find(What:="", LookIn:=xlValues).Row - 1 'eved/non-eved col, subtract 1 to account for blank
+    formatSheet2
+    
+    
+    
+    
+    
+    'find last EMPTY row in Sheet 4 (Charts 3)
+    currColEnd_Chart3 = Workbooks(file).Worksheets(4).Range("A4:A1000").Find(What:="", LookIn:=xlValues).Row
+    firstOf3 = currColEnd_Chart3
+End Sub
+
+Sub formatSheet1()
+    'bolded total avgs in avgs section of DataAnalyzed sheet must move down one to make space for new dates
+    'Spans from Col U to Col AG
+    Workbooks(file).Worksheets(1).Range("U" & (currColEnd + 1) & ":" & "AG" & (currColEnd + 1)).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    Workbooks(file).Worksheets(1).Range("U" & (currColEnd + 1)).Value = DateAdd("m", 1, Date) 'next month
+End Sub
+
+Sub finalAvgs1()
+    Dim selRange As Range
+
+    'greenhouse Influent
+    Set selRange = Workbooks(file).Worksheets(1).Range("V4:V" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("V" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("V" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    'greenhouse effluent
+    Set selRange = Workbooks(file).Worksheets(1).Range("W4:W" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("W" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("W" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'open Influent
+    Set selRange = Workbooks(file).Worksheets(1).Range("Y4:Y" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("Y" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("Y" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'open effluent
+    Set selRange = Workbooks(file).Worksheets(1).Range("Z4:Z" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("Z" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("Z" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'rain
+    Set selRange = Workbooks(file).Worksheets(1).Range("AB4:AB" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("AB" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("AB" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'greenhouse temp
+    Set selRange = Workbooks(file).Worksheets(1).Range("AD4:AD" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("AD" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("AD" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'greenhouse %RH
+    Set selRange = Workbooks(file).Worksheets(1).Range("AE4:AE" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("AE" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("AE" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'open temp
+    Set selRange = Workbooks(file).Worksheets(1).Range("AF4:AF" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("AF" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("AF" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    'open %RH
+    Set selRange = Workbooks(file).Worksheets(1).Range("AG4:AG" & currAvgRow)
+    Workbooks(file).Worksheets(1).Range("AG" & (currAvgRow + 2)).Value = CInt(Application.WorksheetFunction.Average(selRange)) 'avgs
+    Workbooks(file).Worksheets(1).Range("AG" & (currAvgRow + 3)).Value = CInt(Application.WorksheetFunction.Small(selRange, 1)) & "-" & CInt(Application.WorksheetFunction.Large(selRange, 1)) 'range
+    
+    
+    Set selRange = Workbooks(file).Worksheets(1).Range("A1")
+End Sub
+
+Sub formatSheet2()
+    Workbooks(file).Worksheets(2).Range("A" & (currColEnd2 + 1)).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    Workbooks(file).Worksheets(2).Range("A" & (currColEnd2 + 1)).Value = DateAdd("m", 1, Date) 'next month
+End Sub
+
+Sub testing()
+     folderPath = ThisWorkbook.Path + "\"
+     file = Dir(folderPath)
+     'file = Dir(folderPath)
+     Debug.Print Workbooks(file).Worksheets(4).Range("A4:A1000").Find(What:="", LookIn:=xlValues).Row - 1
+    Debug.Print "h" & vbCrLf & "i"
+End Sub
